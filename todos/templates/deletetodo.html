@@ -1,0 +1,22 @@
+{% extends "main.html" %}
+{% block content %}
+
+  {% if session.email == todo.user.email %}
+    <h2> Are you sure you want to delete {{todo.name}}? </h2>
+    <form action="#" method = 'post'>
+      <button type="submit" type="submit">Delete</button>
+    </form>
+    <a href="{{url_for('showToDos', todo_id=todo.id)}}">
+      <button>Cancel</button>
+    </a>
+  {% else %}
+    <p>
+      Sorry, you don't have permission to delete this entry.
+      <br>For more info: {{todo.user.name}}
+      <br>If this ^ is you, make sure to login.
+      <br>Back to <a href="{{ url_for('showToDos', todo_id = todo.id)}}">menu.</a>
+    </p>
+  {% endif %}
+
+
+{% endblock %}

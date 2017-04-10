@@ -1,0 +1,27 @@
+{% extends "main.html" %}
+{% block content %}
+  <h1>To Dos</h1>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <p class = 'flash'>
+        {% for message in messages %}
+          {{ message }} <br>
+        {% endfor %}
+      </p>
+    {% endif %}
+  {% endwith %}
+
+  {% for todo in todos %}
+    <h3>{{todo.name}}</h3>
+
+    {% if session.email == todo.user.email %}
+      <div>
+        <a href="{{url_for('editToDo', todo_id = todo.id )}}">Edit</a>
+        <a href="{{url_for('deleteToDo', todo_id = todo.id )}}">Delete</a>
+      </div>
+    {% endif %}
+  {% endfor %}
+
+{% endblock %}
+

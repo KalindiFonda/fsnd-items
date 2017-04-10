@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>So many todos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <div>
+      <a href="{{url_for('showToDos')}}">Show all</a>
+
+      {%if 'username' not in session %}
+        <a href="{{url_for('login')}}">Login</a>
+        <!-- TODO login to redirect to page you were before -->
+      {% else %}
+        <a href="{{url_for('logout')}}">Logout</a>
+        <a href="{{url_for('newToDo')}}">Add ToDo</a>
+      {% endif %}
+
+      {% block content %}
+      {% endblock %}
+
+    </div>
+  </body>
+</html>
