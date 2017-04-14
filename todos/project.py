@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, jsonify, url_for, flash
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
-from database_setup import ToDo, Base, User
+from database_setup import ToDo, Base, User, Category
 from flask import session as login_session
 import random
 import string
@@ -27,15 +27,8 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
-#todo: login
-@app.route('/login')
-def login():
-    state = ''.join(random.choice(string.ascii_uppercase + string.digits)
-                    for x in xrange(32))
-    login_session['state'] = state
-    return render_template('login.html', STATE=state)
 
-
+# google login functionality, code from https://classroom.udacity.com/courses/ud330
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
     # Validate state token
@@ -114,11 +107,11 @@ def gconnect():
     login_session['user_id'] = user_id
 
     user_name = login_session['username']
-    flash("you are now logged in as %s" % user_name)
+    flash("You are now logged in as %s" % user_name)
     return user_name
 
 
-#todo: logout
+# logout
 @app.route('/logout')
 def logout():
     if 'provider' in login_session:
@@ -145,11 +138,9 @@ def createUser(login_session):
     user = session.query(User).filter_by(email=login_session['email']).one()
     return user.id
 
-
 def getUserInfo(user_id):
     user = session.query(User).filter_by(id=user_id).one()
     return user
-
 
 def getUserID(email):
     try:
@@ -159,7 +150,7 @@ def getUserID(email):
         return None
 
 
-# DISCONNECT - Revoke a current user's token and reset their login_session
+# DISCONNECT - Revoke a current user's token and reset their login_session, code from https://classroom.udacity.com/courses/ud330
 @app.route('/gdisconnect')
 def gdisconnect():
     # Only disconnect a connected user.
@@ -181,35 +172,65 @@ def gdisconnect():
         return response
 
 
-@app.route('/todo/JSON')
-def categoriesJSON():
+# JSON API to view all todos
+@app.route('/todo/json')
+def todosJSON():
     todos = session.query(ToDo).all()
     return jsonify(todos=[r.serialize for r in todos])
 
 
-#show all
+# JSON API to view todos in category
+@app.route('/category/<int:category_id>/json')
+def categoryJSON(category_id):
+    category = session.query(Category).filter_by(id = category_id).one()
+    items = session.query(ToDo).filter_by(category_id = category_id).all()
+    return jsonify(Category=[i.serialize for i in items])
+
+
+# show all to dos
 @app.route('/')
 @app.route('/todo/')
 def showToDos():
     todos = session.query(ToDo)
-    return render_template('todos.html', todos=todos)
+    categories = session.query(Category)
+    state = ''.join(random.choice(string.ascii_uppercase + string.digits)
+                    for x in xrange(32))
+    login_session['state'] = state
+    return render_template('todos.html', todos=todos, categories=categories, STATE=state)
 
 
-#todo: new
+# create new category
+@app.route('/category/', methods=['POST'])
+def newCategory():
+    category_name = request.form['category_name']
+    newCategory = Category(
+        name=request.form['category_name'],
+        user_id=login_session['user_id'])
+    session.add(newCategory)
+    flash('New Category %s Successfully Created' % newCategory.name)
+    session.commit()
+    return redirect(url_for('new'))
+
+
+#create new todo
 @app.route('/todo/new/', methods=['GET', 'POST'])
-def newToDo():
+def new():
     if request.method == 'POST':
-        newToDo = ToDo(
+        category_id = int(request.form['category'])
+        category = session.query(Category).filter_by(id = category_id).one()
+        new = ToDo(
             name=request.form['name'],
-            user_id=login_session['user_id'])
-        session.add(newToDo)
-        flash('New To Do %s Successfully Created' % newToDo.name)
+            user_id=login_session['user_id'],
+            category=category)
+        session.add(new)
+        flash('New To Do %s Successfully Created' % new.name)
         session.commit()
-        return redirect(url_for('showToDos'))
-    return render_template('newtodo.html')
+        return redirect(url_for('new'))
+    categories = session.query(Category)
+    return render_template('new.html', categories=categories)
 
 
-#todo: edit
+# edit to do
 @app.route('/todo/<int:todo_id>/edit/', methods=['GET', 'POST'])
 def editToDo(todo_id):
     editToDo = session.query(ToDo).filter_by(id=todo_id).one()
@@ -220,22 +241,38 @@ def editToDo(todo_id):
     return render_template('edittodo.html', todo=editToDo)
 
 
+# category edit
+@app.route('/category/<int:category_id>/edit/', methods=['GET', 'POST'])
+def editCategory(category_id):
+    editCategory = session.query(Category).filter_by(id=category_id).one()
+    if request.method == 'POST':
+        editCategory.name = request.form['name']
+        flash('Category Successfully Edited %s' % editCategory.name)
+        return redirect(url_for('showToDos'))
+    return render_template('editcategory.html', category=editCategory)
+
+
 #todo: delete
 @app.route('/todo/<int:todo_id>/delete/', methods=['GET', 'POST'])
 def deleteToDo(todo_id):
     deleteToDo = session.query(ToDo).filter_by(id=todo_id).one()
-    #to do if no entry for ID
-
+    # what todo if no entry for ID???
     if request.method == 'POST':
         session.delete(deleteToDo)
         flash('%s Successfully Deleted' % deleteToDo.name)
         session.commit()
-        return redirect(url_for('showToDos'))
-    return render_template('deletetodo.html', todo=deleteToDo)
-    # todo: I prob exposed db for calls, doing the checking within the templates - if I put it into the post call then ist should not appear often.
-    # if 'username' not in login_session or creator.id != login_session['user_id']
-    # if deleteToDo.user_id != login_session['user_id']:
-    #    return "<script>function myFunction() {alert('You are not authorized to delete this category.');}</script><body onload='myFunction()''>"
+    return redirect(url_for('showToDos'))
+
+
+# delete category
+@app.route('/category/<int:category_id>/delete/', methods=['GET', 'POST'])
+def deleteCategory(category_id):
+    deleteCategory = session.query(Category).filter_by(id=category_id).one()
+    if request.method == 'POST':
+        session.delete(deleteCategory)
+        flash('%s Successfully Deleted' % deleteCategory.name)
+        session.commit()
+    return redirect(url_for('showToDos'))
 
 
 if __name__ == '__main__':

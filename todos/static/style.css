@@ -1,1 +1,69 @@
-style.css
+body {
+	font-family: "Verdana", Arial, sans-serif;
+	width: 500px;
+	margin: 0 auto;
+	margin-top: 10px;
+	text-align: center;
+}
+
+h1 {
+	background-color: #4285f4;
+	color: white;
+}
+
+h3 {
+	background-color: lightblue;
+	padding-bottom: 3px;
+}
+
+a {
+	font-size: 50%;
+}
+
+nav a {
+	font-size: 100%;
+	border: solid 1px;
+	border-radius: 3px;
+	padding: 5px;
+	color: #4285f4;
+	text-decoration: none;
+	min-width: 100px;
+}
+
+.name {
+	font-weight: bold;
+}
+
+ul {
+	width: 400px;
+	margin: 0 auto;
+	text-align: left;
+}
+
+li {
+	list-style: none
+}
+
+.flash {
+	color: lightblue;
+	text-transform: uppercase;
+	padding: 5px;
+	font-size: 50%;
+}
+
+.delete,
+.edit {
+	display: inline;
+}
+
+.json {
+	color: gray;
+}
+
+h1 .json {
+	color: lightgray;
+}
+
+iframe {
+	margin-bottom: -14px !important;
+}

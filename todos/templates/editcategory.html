@@ -1,11 +1,11 @@
 {% extends "main.html" %}
 {% block content %}
 
-  <p>Edit to do <span class="name">{{todo.name}}</span></p>
-  {% if session.email == todo.user.email %}
-    <form class="edit" action="{{ url_for('editToDo', todo_id = todo.id)}}" method="post">
+  <p>Edit category: <span class="name">{{category.name}}</span></p>
+  {% if session.email == category.user.email %}
+    <form class="edit" action="{{ url_for('editCategory', category_id = category.id)}}" method="post">
       <label for="name">Name:</label>
-      <input type ="text" name="name" value="{{todo.name}}" required>
+      <input type ="text" name="name" value="{{category.name}}" required>
       <br>
       <button type="submit" id="submit" type="submit">Save</button>
     </form>
@@ -13,7 +13,7 @@
   {% else %}
     <p>
       Sorry, you don't have permission to change this entry.
-      <br>For more info: {{todo.user.name}}
+      <br>For more info: {{category.user.name}}
       <br>If this ^ is you, make sure to login.
       <br>Back to <a href="{{url_for('showToDos')}}">menu.</a>
     </p>

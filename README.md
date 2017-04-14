@@ -12,7 +12,7 @@ Code heavily based on code from courses:
 - [Authentication and Authorization](https://classroom.udacity.com/courses/ud330)
 
 
-####Getting Started
+#### Getting Started
 
 1. Install Vagrant and VirtualBox
 (get files)
@@ -52,7 +52,7 @@ ToDo object:
 ```
 
 2 places to add stuff:
-- login.html - find with TODO-INSERT
+- login section in the main.html - find with TODO-INSERT
 - and client_secret.json:
 
 1. Google APIs Console — https://console.developers.google.com/apis - choose app

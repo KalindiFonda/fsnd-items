@@ -7,20 +7,73 @@
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
   </head>
   <body>
-    <div>
+    <nav>
       <a href="{{url_for('showToDos')}}">Show all</a>
-
       {%if 'username' not in session %}
-        <a href="{{url_for('login')}}">Login</a>
-        <!-- TODO login to redirect to page you were before -->
+        <!--LOAD PRE-REQUISITES FOR GOOGLE SIGN IN -->
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+        <script src="//apis.google.com/js/platform.js?onload=start"></script>
+        <!-- END PRE-REQUISITES FOR GOOGLE SIGN IN -->
+        <!-- GOOGLE PLUS SIGN IN-->
+        <span id="signInButton">
+          <span class="g-signin"
+            data-scope="openid email"
+            data-clientid="889603008444-u4shom53hfaij9u2klkalvu8cs1sljq9"
+            data-redirecturi="postmessage"
+            data-accesstype="offline"
+            data-cookiepolicy="single_host_origin"
+            data-callback="signInCallback"
+            data-approvalprompt="force">
+          </span>
+        </span>
+
+        <script>
+          function signInCallback(authResult) {
+            if (authResult['code']) {
+              // Send the one-time-use code to the server, if the server responds, write a 'login successful' message to the web page and then redirect back to the main categories page
+              $.ajax({
+                type: 'POST',
+                url: '/gconnect?state={{STATE}}',
+                processData: false,
+                data: authResult['code'],
+                contentType: 'application/octet-stream; charset=utf-8',
+                success: function(result) {
+                  // Handle or verify the server response if necessary.
+                  if (result) {
+                    window.location.href = "/";
+                  } else if (authResult['error']) {
+                    var error_message = 'There was an error: ' + authResult['error']
+                    console.log(error_message);
+                    $('#result').html(error_message);
+                  } else {
+                    $('#result').html('Failed to make a server-side call, or maybe not. Try refresh, back and forth, prob gonna work.');
+                  }
+                }
+              });
+            }
+          }
+        </script>
+        <!--END GOOGLE PLUS SIGN IN -->
       {% else %}
         <a href="{{url_for('logout')}}">Logout</a>
-        <a href="{{url_for('newToDo')}}">Add ToDo</a>
+        <a href="{{url_for('new')}}">Add ToDo</a>
       {% endif %}
+    </nav>
+    <div>
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <p class='flash'>
+            {% for message in messages %}
+              {{ message }} <br>
+            {% endfor %}
+          </p>
+        {% endif %}
+      {% endwith %}
 
       {% block content %}
       {% endblock %}
 
     </div>
+    <span id="result"></span>
   </body>
 </html>
