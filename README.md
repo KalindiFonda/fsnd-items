@@ -23,18 +23,18 @@ Code heavily based on code from courses:
 
 #### Future todo wishes:
 
-ToDo object:
+to do object:
 ```
 #todo: date begin
 # created_on = db.Column(db.DateTime, server_default=db.func.now())
 # updated_on = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
 # http://stackoverflow.com/questions/12154129/how-can-i-automatically-populate-sqlalchemy-database-fields-flask-sqlalchemy
-
 #todo: duration
 #todo: eta
 #todo: done boolean
 ```
 
+to do security
 ```
 # todo: I prob exposed db for calls, doing the auth checking within the templates:
 # if 'username' not in login_session or creator.id != login_session['user_id']
@@ -42,7 +42,7 @@ ToDo object:
 	return "<script>function myFunction() {alert('You are not authorized to delete this category. Please create your own category in order to delete.');}</script><body onload='myFunction()''>"
 ```
 
-2 places to add stuff:
+To run you need to add some secrets in places:
 - login section in the main.html - find with TODOINSERT
 - and client_secret.json:
 
@@ -54,7 +54,7 @@ ToDo object:
 6. set authorized origins
 7. Download client secret, there is a button for it.
 
-(check it out here: goo.gl/dnNnen )
+(check it out here: [instructions](goo.gl/dnNnen))
 
 
 

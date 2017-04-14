@@ -37,8 +37,5 @@ ToDo2 = ToDo(user_id=1, name="Catch fishes", category=Category3)
 session.add(ToDo2)
 session.commit()
 
-ToDo2 = ToDo(user_id=1, name="Give kishes", category=Category1)
-session.add(ToDo2)
-session.commit()
 
 print "db populated"

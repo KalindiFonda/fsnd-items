@@ -1,6 +1,6 @@
 body {
 	font-family: "Verdana", Arial, sans-serif;
-	width: 500px;
+	max-width: 500px;
 	margin: 0 auto;
 	margin-top: 10px;
 	text-align: center;
@@ -35,7 +35,7 @@ nav a {
 }
 
 ul {
-	width: 400px;
+	max-width: 400px;
 	margin: 0 auto;
 	text-align: left;
 }
