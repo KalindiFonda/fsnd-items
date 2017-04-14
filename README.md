@@ -21,14 +21,6 @@ Code heavily based on code from courses:
 4. Access and test on http://localhost:5000.
 
 
-
-For this project todo.
-
-- Do I need to do categories?
-- Do I need to give items more info?
-- and comments
-
-
 #### Future todo wishes:
 
 ToDo object:
@@ -41,7 +33,6 @@ ToDo object:
 #todo: duration
 #todo: eta
 #todo: done boolean
-#todo: repetitivity
 ```
 
 ```
@@ -52,7 +43,7 @@ ToDo object:
 ```
 
 2 places to add stuff:
-- login section in the main.html - find with TODO-INSERT
+- login section in the main.html - find with TODOINSERT
 - and client_secret.json:
 
 1. Google APIs Console — https://console.developers.google.com/apis - choose app
@@ -63,7 +54,7 @@ ToDo object:
 6. set authorized origins
 7. Download client secret, there is a button for it.
 
-(check it out here: goo.gl/dnNnen)
+(check it out here: goo.gl/dnNnen )
 
 
 
