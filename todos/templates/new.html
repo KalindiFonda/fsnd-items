@@ -1,9 +1,8 @@
 {% extends "main.html" %}
   {% block content %}
 
-  <p>New To Do</p>
-
-  {% if session.email %}
+  <h3>New To Do</h3>
+    {% if session.email %}
     <form action="#" method = "post">
       <textarea type="text" name="name" placeholder="Insert To Do" cols=40 rows=1 required></textarea>
       <br>
@@ -14,19 +13,19 @@
       </select>
       <button type="submit" type="submit">Create</button>
     </form>
+    <br>
+    <h4> Can't find right category, create new: </h4>
+    <form action="/category/new/" method ="post">
+      <textarea type="text" name="category_name"
+                placeholder="Insert Category Name"
+                cols=40 rows=1 required></textarea>
+      <br>
+      <button type="submit" type="submit">Create</button>
+    </form>
   {% else %}
     <p>
-      You are not logged in, make sure to login to fix
-      <a href="{{url_for('login')}}">Login</a>
+      You are not logged in, make sure to Sign In above to fix.
     </p>
   {% endif %}
-  <br>
-  <h4> Can't find right category, create new: </h4>
-  <form action="/category/" method ="post">
-    <textarea type="text" name="category_name"
-              placeholder="Insert Category Name"
-              cols=40 rows=1 required></textarea>
-    <br>
-    <button type="submit" type="submit">Create</button>
-  </form>
+
 {% endblock %}

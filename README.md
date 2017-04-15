@@ -34,14 +34,6 @@ to do object:
 #todo: done boolean
 ```
 
-to do security
-```
-# todo: I prob exposed db for calls, doing the auth checking within the templates:
-# if 'username' not in login_session or creator.id != login_session['user_id']
-# if categoryToDelete.user_id != login_session['user_id']:
-	return "<script>function myFunction() {alert('You are not authorized to delete this category. Please create your own category in order to delete.');}</script><body onload='myFunction()''>"
-```
-
 To run you need to add some secrets in places:
 - login section in the main.html - find with TODOINSERT
 - and client_secret.json:

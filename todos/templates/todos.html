@@ -8,19 +8,19 @@
     <a class="json" href="{{url_for('categoryJSON', category_id = category.id)}}">get json</a>
     {% if session.email == category.user.email %}
         <a href="{{url_for('editCategory', category_id = category.id )}}"><button>Edit</button></a>
-        <form class="delete" action="{{url_for('deleteCategory', category_id = category.id )}}" method='post'>
+        <form class="delete" action="{{url_for('delete', type_id = category.id, type_to_delete='category')}}" method='post'>
         <input type="submit" value="delete"
-          onclick="return confirm('Do you want to delete {{category.name}}?')">
+          onclick="return confirm('Do you want to delete {{category.name}}, BEWARE!!! You will delete all the to dos that are part of it?')">
         </form>
     {% endif %}
     </h3>
     <ul>
     {% for todo in todos %}
       {% if category.id == todo.category.id %}
-        <li>{{todo.name}}
+        <li>{{todo.name}} <a class="json" href="{{url_for('todoJSON', todo_id = todo.id)}}">get json</a>
         {% if session.email == todo.user.email %}
             <a href="{{url_for('editToDo', todo_id = todo.id )}}"><button>Edit</button></a>
-            <form class="delete" action="{{url_for('deleteToDo', todo_id = todo.id )}}" method='post'>
+            <form class="delete" action="{{url_for('delete', type_id = todo.id, type_to_delete='todo')}}" method='post'>
               <input type="submit" value="delete"
                 onclick="return confirm('Do you want to delete {{todo.name}}?')">
             </form>

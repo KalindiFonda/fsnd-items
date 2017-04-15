@@ -2,3 +2,5 @@
 .DS_Store
 *.db
 secret_stuff.txt
+helper.py
+client_secrets.json

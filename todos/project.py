@@ -129,26 +129,6 @@ def logout():
         flash("You were not logged in")
         return redirect(url_for('showToDos'))
 
-# User Helper Functions
-def createUser(login_session):
-    newUser = User(name=login_session['username'], email=login_session[
-                   'email'])
-    session.add(newUser)
-    session.commit()
-    user = session.query(User).filter_by(email=login_session['email']).one()
-    return user.id
-
-def getUserInfo(user_id):
-    user = session.query(User).filter_by(id=user_id).one()
-    return user
-
-def getUserID(email):
-    try:
-        user = session.query(User).filter_by(email=email).one()
-        return user.id
-    except:
-        return None
-
 
 # DISCONNECT - Revoke a current user's token and reset their login_session, code from https://classroom.udacity.com/courses/ud330
 @app.route('/gdisconnect')
@@ -171,13 +151,57 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
+# Helper Functions
+def createUser(login_session):
+    # create user
+    newUser = User(name=login_session['username'], email=login_session[
+                   'email'])
+    session.add(newUser)
+    session.commit()
+    user = session.query(User).filter_by(email=login_session['email']).one()
+    return user.id
+
+def getUserID(email):
+    # get user ID
+    try:
+        user = session.query(User).filter_by(email=email).one()
+        return user.id
+    except:
+        return None
+
+def is_user_same(user_id):
+    # check if the logged in user is the same as the one trying to change data
+    try:
+        if user_id == login_session['user_id']:
+            return True
+        else:
+            return flash('Sorry, no permissions to change, wrong user')
+    except:
+        return flash('Sorry, no permissions to change, not logged in')
+
+
+def get_state():
+    # get state for the session, to be used for login
+    try:
+        return login_session['state']
+    except:
+        state = ''.join(random.choice(string.ascii_uppercase + string.digits)
+                    for x in xrange(32))
+        login_session['state'] = state
+        return login_session['state']
+
 
 # JSON API to view all todos
-@app.route('/todo/json')
+@app.route('/todos/json')
 def todosJSON():
     todos = session.query(ToDo).all()
     return jsonify(todos=[r.serialize for r in todos])
 
+# JSON API to view single todos
+@app.route('/todo/<int:todo_id>/json')
+def todoJSON(todo_id):
+    todo = session.query(ToDo).filter_by(id = todo_id).one()
+    return jsonify(todo=todo.serialize)
 
 # JSON API to view todos in category
 @app.route('/category/<int:category_id>/json')
@@ -186,59 +210,60 @@ def categoryJSON(category_id):
     items = session.query(ToDo).filter_by(category_id = category_id).all()
     return jsonify(Category=[i.serialize for i in items])
 
-
 # show all to dos
 @app.route('/')
 @app.route('/todo/')
 def showToDos():
     todos = session.query(ToDo)
     categories = session.query(Category)
-    state = ''.join(random.choice(string.ascii_uppercase + string.digits)
-                    for x in xrange(32))
-    login_session['state'] = state
-    return render_template('todos.html', todos=todos, categories=categories, STATE=state)
+    return render_template('todos.html', todos=todos, categories=categories, STATE=get_state())
 
 
 # create new category
-@app.route('/category/', methods=['POST'])
+@app.route('/category/new/', methods=['POST','GET'])
 def newCategory():
-    category_name = request.form['category_name']
-    newCategory = Category(
-        name=request.form['category_name'],
-        user_id=login_session['user_id'])
-    session.add(newCategory)
-    flash('New Category %s Successfully Created' % newCategory.name)
-    session.commit()
+    if request.method == 'POST':
+        try:
+            category_name = request.form['category_name']
+            newCategory = Category(
+                name=request.form['category_name'],
+                user_id=login_session['user_id'])
+            session.add(newCategory)
+            flash('New Category %s Successfully Created' % newCategory.name)
+            session.commit()
+        except:
+            flash('Sorry, not logged in')
     return redirect(url_for('new'))
 
-
-#create new todo
+#create new todo and get page for new category and to_do
 @app.route('/todo/new/', methods=['GET', 'POST'])
 def new():
     if request.method == 'POST':
-        category_id = int(request.form['category'])
-        category = session.query(Category).filter_by(id = category_id).one()
-        new = ToDo(
-            name=request.form['name'],
-            user_id=login_session['user_id'],
-            category=category)
-        session.add(new)
-        flash('New To Do %s Successfully Created' % new.name)
-        session.commit()
-        return redirect(url_for('new'))
+        try:
+            category_id = int(request.form['category'])
+            category = session.query(Category).filter_by(id = category_id).one()
+            new = ToDo(
+                name=request.form['name'],
+                user_id=login_session['user_id'],
+                category=category)
+            session.add(new)
+            flash('New To Do %s Successfully Created' % new.name)
+            session.commit()
+            return redirect(url_for('new'))
+        except:
+            flash('Sorry, not logged in')
     categories = session.query(Category)
-    return render_template('new.html', categories=categories)
-
+    return render_template('new.html', categories=categories, STATE=get_state())
 
 # edit to do
 @app.route('/todo/<int:todo_id>/edit/', methods=['GET', 'POST'])
 def editToDo(todo_id):
     editToDo = session.query(ToDo).filter_by(id=todo_id).one()
     if request.method == 'POST':
-        editToDo.name = request.form['name']
-        flash('To Do Successfully Edited %s' % editToDo.name)
-        return redirect(url_for('showToDos'))
-    return render_template('edittodo.html', todo=editToDo)
+        if is_user_same(editToDo.user_id):
+            editToDo.name = request.form['name']
+            flash('To Do Successfully Edited %s' % editToDo.name)
+    return render_template('edittodo.html', todo=editToDo, STATE=get_state())
 
 
 # category edit
@@ -246,33 +271,31 @@ def editToDo(todo_id):
 def editCategory(category_id):
     editCategory = session.query(Category).filter_by(id=category_id).one()
     if request.method == 'POST':
-        editCategory.name = request.form['name']
-        flash('Category Successfully Edited %s' % editCategory.name)
+        if is_user_same(editCategory.user_id):
+            editCategory.name = request.form['name']
+            flash('Category Successfully Edited %s' % editCategory.name)
+    return render_template('editcategory.html', category=editCategory, STATE=get_state())
+
+# delete either cat, or
+@app.route('/delete/<string:type_to_delete>/<int:type_id>/', methods=['GET', 'POST'])
+def delete(type_to_delete, type_id):
+    # check if category
+    if type_to_delete == "todo":
+        type_to_delete = ToDo
+    elif type_to_delete == "category":
+        type_to_delete = Category
+    else:
+        flash("Can't delete %s not sure what you are trying to delete" % type_to_delete)
         return redirect(url_for('showToDos'))
-    return render_template('editcategory.html', category=editCategory)
-
-
-#todo: delete
-@app.route('/todo/<int:todo_id>/delete/', methods=['GET', 'POST'])
-def deleteToDo(todo_id):
-    deleteToDo = session.query(ToDo).filter_by(id=todo_id).one()
-    # what todo if no entry for ID???
+    # delete the entry
+    delete = session.query(type_to_delete).filter_by(id=type_id).one()
     if request.method == 'POST':
-        session.delete(deleteToDo)
-        flash('%s Successfully Deleted' % deleteToDo.name)
-        session.commit()
+        if is_user_same(delete.user_id):
+            session.delete(delete)
+            flash('%s Successfully Deleted' % delete.name)
+            session.commit()
     return redirect(url_for('showToDos'))
 
-
-# delete category
-@app.route('/category/<int:category_id>/delete/', methods=['GET', 'POST'])
-def deleteCategory(category_id):
-    deleteCategory = session.query(Category).filter_by(id=category_id).one()
-    if request.method == 'POST':
-        session.delete(deleteCategory)
-        flash('%s Successfully Deleted' % deleteCategory.name)
-        session.commit()
-    return redirect(url_for('showToDos'))
 
 
 if __name__ == '__main__':
